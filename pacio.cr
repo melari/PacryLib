@@ -23,13 +23,24 @@ class PacioFile
     @buffer_size = DEFAULT_BUFFER_SIZE
   end
 
-  def read_line
+  def read_line(keep_newline = false)
     line = Slice(UInt8).new(@buffer_size)
     eof = LibSTDIO.fgets(line.pointer(@buffer_size), line.length, @file)
     return nil if eof.nil?
-    String.build do |builder|
+
+    string = String.build do |builder|
       builder.write(line, line.length)
-    end[0..-1]
+    end
+  
+    keep_newline ? string : string[0..-1]
+  end
+
+  def read_all
+    result = ""
+    while(line = read_line(true))
+      result += line
+    end
+    result
   end
 
   def write_line(value)
