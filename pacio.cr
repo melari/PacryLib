@@ -4,15 +4,33 @@ lib LibSTDIO
   fun fclose(file : File)
   fun fgets(string : UInt8*, size : Int32, file : File) : UInt8*
   fun fputs(string : UInt8*, file : File)
+  fun access(path : UInt8*, mode : Int32) : Int32
+
+  F_OK = 0
+end
+
+class PacioException < Exception
 end
 
 class Pacio
   def self.open_for_read(filename : String)
+    assert_file_exists(filename)
     PacioFile.new(LibSTDIO.fopen(filename, "r"))
   end
 
   def self.open_for_write(filename : String)
+    assert_file_exists(filename)
     PacioFile.new(LibSTDIO.fopen(filename, "w"))
+  end
+
+  def self.file_exists?(filename : String)
+    LibSTDIO.access(filename, LibSTDIO::F_OK) != -1
+  end
+
+  private def self.assert_file_exists(filename)
+    unless file_exists?(filename)
+      raise PacioException.new("File `#{filename}` does not exist")
+    end
   end
 end
 
